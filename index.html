@@ -1,24 +1,17 @@
 <html>
 <head>
-<!-- The client library requires jQuery  -->
+  <!-- The client library requires jQuery  -->
   <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
   <script src="https://api.trello.com/1/client.js?key=3d8b8a5a1dbdc837c422f6dc12a0a6e8"></script>  
+  
+  <!-- use local css file -->
   <link rel="stylesheet" type="text/css" href="res/style.css">
   
-  <script type='text/javascript'>//<![CDATA[ 
+  <!-- uncomment use the original trello css -->
+  <!--<link rel="stylesheet" href="https://d2k1ftgv7pobq7.cloudfront.net/css/d9fb6ddfd29393ad6d4bccbbfe5c1ec2/core.css" />  -->
+  
+<script type='text/javascript'>//<![CDATA[ 
 $(window).load(function(){
-
-/* 
-NOTE: The Trello client library has been included as a Managed Resource.  To include the client library in your own code, you would include jQuery and then
-
-<script src="https://api.trello.com/1/client.js?key=your_application_key">...
-
-See https://trello.com/docs for a list of available API URLs
-
-The API development board is at https://trello.com/api
-
-The &dummy=.js part of the managed resource URL is required per http://doc.jsfiddle.net/basic/introduction.html#add-resources
-*/
 $("#loggedout").toggle(true);
 $("#loggedin").toggle(false);  
 
@@ -34,7 +27,7 @@ var onAuthorize = function() {
             .text("Loading Boards...")		
             .appendTo("#output");
 				
-		Trello.get("organizations/orgname/boards", function(boards) {
+		Trello.get("organizations/enobis/boards", function(boards) {
             $boards.empty();
             $.each(boards, function(ix, board) {
 				var renderBoard = 0;	
@@ -55,7 +48,7 @@ var onAuthorize = function() {
                 .appendTo($boardTitle);	
 				
 				var $boardCards = $("<a>")                
-                .addClass("gutter float-cards clearfix js-list")
+                .addClass("gutter float-cards clearfix")
                 .appendTo($boardModule);
 								
 				Trello.get("/boards/" + board.id + "/lists", function(boardCards) {
@@ -74,7 +67,7 @@ var onAuthorize = function() {
 										.appendTo($boardCards);		
 										
 										var $card = $("<div>")								
-										.addClass("list-card js-member-droppable clearfix assigned-to-timvengels ui-droppable")								
+										.addClass("list-card clearfix")								
 										.appendTo($cardContainer);	
 										
 										var $cardLabels = $("<div>")								
@@ -125,7 +118,7 @@ Trello.authorize({
 $("#connectLink")
 .click(function(){
     Trello.authorize({
-        type: "popup",
+        type: "rederict",
         success: onAuthorize,
 		name: "TrelloWall",
 		expiration: "never",		
