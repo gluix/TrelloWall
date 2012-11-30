@@ -37,3 +37,7 @@ http://freaken.de/trellowall/?card_labels_name=samplelabel&card_members_username
 http://freaken.de/trellowall/?card_labels_name=samplelabel&board_organization=mycompany
   
 ....
+
+More Information / Help us:
+--------
+https://trello.com/board/trellowall/50b8bbc9ac1f2a0218006f7b
