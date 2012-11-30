@@ -25,39 +25,41 @@ var onAuthorize = function() {
 	var organizationFilter = $.urlParam('board_organization');
 	var usernameFilter = $.urlParam('card_members_username');
 	var labelFilter = $.urlParam('card_labels_name');
-		
+	
     Trello.members.get("me", function(member){
         $("#fullName").text(member.fullName);
     
 		var $boards = $("<div>")
             .text("Loading Boards...")		
             .appendTo("#output");
-			
-		var boardsUrl = "members/me/boards"
-		if(organizationFilter)
-			boardsUrl += "/organization?" + organizationFilter
 		
-		Trello.get(boardsUrl, function(boards) {
+		var boardUrl = "";
+		if(organizationFilter)
+			boardUrl = "organizations/" + organizationFilter + "/boards";			
+		else
+			boardUrl = "members/me/boards";
+				
+		Trello.get(boardUrl, function(boards) {
             $boards.empty();
-            $.each(boards, function(ix, board) {						
-			    var $boardModule = $("<div>")                
-                .addClass("window-module")
-                .appendTo($boards);	
+            $.each(boards, function(ix, board) {									  
+				var $boardModule = $("<div>")                
+				.addClass("window-module")
+				.appendTo($boards);	
 				$boardModule.hide();
 								
 				var $boardTitle = $("<div>")                
-                .addClass("window-module-title")
-                .appendTo($boardModule)
+				.addClass("window-module-title")
+				.appendTo($boardModule)
 				
-                var $boardLink = $("<a>")
-                .attr({href: board.url, target: "trello", id: "board_" + board.id})
-                .addClass("card")
-                .text(board.name)
-                .appendTo($boardTitle);	
+				var $boardLink = $("<a>")
+				.attr({href: board.url, target: "trello", id: "board_" + board.id})
+				.addClass("card")
+				.text(board.name)
+				.appendTo($boardTitle);	
 				
 				var $boardCards = $("<a>")                
-                .addClass("gutter float-cards clearfix")
-                .appendTo($boardModule);
+				.addClass("gutter float-cards clearfix")
+				.appendTo($boardModule);
 								
 				Trello.get("/boards/" + board.id + "/lists", function(boardCards) {
 					$boardCards.empty();
@@ -121,7 +123,7 @@ var onAuthorize = function() {
 						});						
 					});  
 				});
-            });  
+			});  
         });	
     });
 
