@@ -4,6 +4,8 @@
   <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
   <script src="https://api.trello.com/1/client.js?key=3d8b8a5a1dbdc837c422f6dc12a0a6e8"></script>  
   
+  <script src="res/trellowall.js"></script>  
+  
   <!-- use local css file -->
   <link rel="stylesheet" type="text/css" href="res/style.css">
   
@@ -19,19 +21,24 @@ var onAuthorize = function() {
     updateLoggedIn();
     $("#output").empty();
     
+	var organizationFilter = $.urlParam('board_organization');
+	var usernameFilter = $.urlParam('card_members_username');
+	var labelFilter = $.urlParam('card_labels_name');
+		
     Trello.members.get("me", function(member){
         $("#fullName").text(member.fullName);
     
-
 		var $boards = $("<div>")
             .text("Loading Boards...")		
             .appendTo("#output");
-				
-		Trello.get("organizations/enobis/boards", function(boards) {
-            $boards.empty();
-            $.each(boards, function(ix, board) {
-				var renderBoard = 0;	
 			
+		var boardsUrl = "members/me/boards"
+		if(organizationFilter)
+			boardsUrl += "/organization?" + organizationFilter
+		
+		Trello.get(boardsUrl, function(boards) {
+            $boards.empty();
+            $.each(boards, function(ix, board) {						
 			    var $boardModule = $("<div>")                
                 .addClass("window-module")
                 .appendTo($boards);	
@@ -56,30 +63,39 @@ var onAuthorize = function() {
 					$.each(boardCards, function(ix, list) {
 						Trello.get("/lists/" + list.id + "/cards?members=true", function(boardCards) {
 							$.each(boardCards, function(ix, card) {	
-								var isValidLabel = false;
-								var isValidUser = false;
+								var isValidCard = true;
 								
-								for(i=0;i<card.labels.length;i++)
+								if(isValidCard && labelFilter)
 								{
-									if(card.labels[i].name == "wall")
-									{
-									    isValidLabel = true;										
+									isValidCard = false;
+									for(i=0;i<card.labels.length;i++)
+									{									
+										if(card.labels[i].name == labelFilter)
+										{										
+											isValidCard = true;										
+										}
 									}
 								}
-																								
-								for(i=0;i<card.members.length;i++)
-								{
-									if(card.members[i].username == "timvengels")
+																				
+								if(isValidCard && usernameFilter)		
+								{		
+									isValidCard = false;								
+									for(i=0;i<card.members.length;i++)
 									{
-										isValidUser = true;										
+										if(card.members[i].username == usernameFilter)
+										{
+											isValidCard = true;										
+										}
 									}
 								}
-							
+								
+								/*
 								var isValidCard = false;
 								if(isValidUser && isValidLabel)
 								{
 									isValidCard = true;
-								}								
+								}
+								*/								
 								
 								if(isValidCard)
 								{
