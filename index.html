@@ -54,37 +54,59 @@ var onAuthorize = function() {
 				Trello.get("/boards/" + board.id + "/lists", function(boardCards) {
 					$boardCards.empty();
 					$.each(boardCards, function(ix, list) {
-						Trello.get("/lists/" + list.id + "/cards", function(boardCards) {
-							$.each(boardCards, function(ix, card) {							
+						Trello.get("/lists/" + list.id + "/cards?members=true", function(boardCards) {
+							$.each(boardCards, function(ix, card) {	
+								var isValidLabel = false;
+								var isValidUser = false;
+								
 								for(i=0;i<card.labels.length;i++)
 								{
 									if(card.labels[i].name == "wall")
 									{
-										$boardModule.show();
-										
-										var $cardContainer = $("<div>")								
-										.addClass("list-card-container")								
-										.appendTo($boardCards);		
-										
-										var $card = $("<div>")								
-										.addClass("list-card clearfix")								
-										.appendTo($cardContainer);	
-										
-										var $cardLabels = $("<div>")								
-										.addClass("card-labels clearfix")								
-										.appendTo($card);	
-										
-										var $cardLink = $("<a>")	
-										.attr({href: card.url, target: "trello", id: "card_" + card.id})								
-										.addClass("card-link")	
-										.text(card.name)								
-										.appendTo($cardLabels);
-										
-										var $cardList = $("<p>")								
-										.addClass("list-card-position quiet")	
-										.html("in <strong>" + list.name + "</strong>")								
-										.appendTo($cardLabels);
+									    isValidLabel = true;										
 									}
+								}
+																								
+								for(i=0;i<card.members.length;i++)
+								{
+									if(card.members[i].username == "timvengels")
+									{
+										isValidUser = true;										
+									}
+								}
+							
+								var isValidCard = false;
+								if(isValidUser && isValidLabel)
+								{
+									isValidCard = true;
+								}								
+								
+								if(isValidCard)
+								{
+									$boardModule.show();
+										
+									var $cardContainer = $("<div>")								
+									.addClass("list-card-container")								
+									.appendTo($boardCards);		
+									
+									var $card = $("<div>")								
+									.addClass("list-card clearfix")								
+									.appendTo($cardContainer);	
+									
+									var $cardLabels = $("<div>")								
+									.addClass("card-labels clearfix")								
+									.appendTo($card);	
+									
+									var $cardLink = $("<a>")	
+									.attr({href: card.url, target: "trello", id: "card_" + card.id})								
+									.addClass("card-link")	
+									.text(card.name)								
+									.appendTo($cardLabels);
+									
+									var $cardList = $("<p>")								
+									.addClass("list-card-position quiet")	
+									.html("in <strong>" + list.name + "</strong>")								
+									.appendTo($cardLabels);
 								}
 							});  
 						});						
