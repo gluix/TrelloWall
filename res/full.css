@@ -92,9 +92,9 @@ textarea:-moz-placeholder{color:#939393;}
 
 .gutter{margin-left:40px;}
 
-.float-cards .list-card-container{width:240px;float:left;margin:0 8px 8px 0;}.float-cards .list-card-container:nth-child(6n+1){clear:left;}
-.float-cards .list-card-container .list-card .list-card-title{padding-right:0;}
-.float-cards .list-card-container .card-operation{visibility:hidden;}
+.float-cards .list-card-container-customize{width:240px;float:left;margin:0 8px 8px 0;}.float-cards .list-card-container-customize:nth-child(10n+1){clear:left;}
+.float-cards .list-card-container-customize .list-card .list-card-title{padding-right:0;}
+.float-cards .list-card-container-customize .card-operation{visibility:hidden;}
 
 
 .card-link{text-decoration:none;}
