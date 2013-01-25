@@ -17,7 +17,7 @@ only load cards with a specific member (by username)
 * __card_labels_name__  
 only load cards with a specific label (by name)
 													
-* __list_id__
+* __list_id__  
 only load cards on a list with a specific id					
 
 * __list_name__  
