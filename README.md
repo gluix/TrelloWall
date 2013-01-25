@@ -15,7 +15,23 @@ only load cards on boards from a specific organization
 only load cards with a specific member (by username)						
 
 * __card_labels_name__  
-only load cards with a specific label (by name) 								
+only load cards with a specific label (by name)
+													
+* __list_id __
+only load cards on a list with a specific id					
+
+* __list_name__  
+only load cards on a list with a specific name						
+
+* __board_id__
+only load cards on a board with a specific id	
+
+* __board_name__  
+only load cards on a board with a specific name
+
+* __minVoteFilter__  
+only load cards on a board with a minimum count of votes
+
 
 Sample:
 --------
