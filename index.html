@@ -24,29 +24,30 @@
   </script>  
   
 <script type='text/javascript'>//<![CDATA[ 
+
+var organizationFilter = $.urlParam('board_organization');
+var usernameFilter = $.urlParam('card_members_username');
+var labelFilter = $.urlParam('card_labels_name');
+
+var listIdFilter = $.urlParam('list_id');
+var listNameFilter = $.urlParam('list_name');
+	
+var boardIdFilter = $.urlParam('board_id');
+var boardNameFilter = $.urlParam('board_name');
+	
+var minVoteFilter = $.urlParam('minVoteFilter');
+
+var renderedMembers = [];	
+var boardHash = {};
+var listHash = {};
+
+
 function onAuthorize() {
     updateLoggedIn();
+	renderedMembers = [];	
+	
     $("#output").empty();
-    
-	var renderedMembers = [];
-	
-	var boardHash = {};
-	var listHash = {};
-	
-	
-	var organizationFilter = $.urlParam('board_organization');
-	var usernameFilter = $.urlParam('card_members_username');
-	var labelFilter = $.urlParam('card_labels_name');
-	
-	var listIdFilter = $.urlParam('list_id');
-	var listNameFilter = $.urlParam('list_name');
-		
-	var boardIdFilter = $.urlParam('board_id');
-	var boardNameFilter = $.urlParam('board_name');
-		
-	var minVoteFilter = $.urlParam('minVoteFilter');
 
-	 
 	var $membersContent = $("#members-content")    
 	$membersContent.empty();
 	
@@ -54,6 +55,7 @@ function onAuthorize() {
         $("#fullName").text(member.fullName);
     		
 		var $loading = $("<div>")
+			.attr({id: "loading"})	
 			.addClass("window-module-title")
             .text("loading boards...")		
             .appendTo("#output");
@@ -70,216 +72,302 @@ function onAuthorize() {
 				
 		Trello.get(boardUrl, function(boards) {			
 			$loading.text("loading lists...");
-			console.log("loading lists...");
+			console.log("loading lists...");			
             $.each(boards, function(ix, board) {
-				boardHash[board.id] = board;
-			
-				var $boardModule = $("<div>") 
-				.attr({id: "board_" + board.id})				
-				.addClass("window-module")
-				.appendTo($boards);	
-				$boardModule.hide();
-								
-				var $boardTitle = $("<div>")                
-				.addClass("window-module-title")
-				.addClass("board-module-title")
-				.appendTo($boardModule)
+				var isValidBoard = true;
 				
-				var $boardLink = $("<a>")
-				.attr({href: board.url, target: "trello"})
-				.addClass("card")
-				.text(board.name)
-				.appendTo($boardTitle);	
+				if(isValidBoard && boardNameFilter)		
+				{		
+					isValidBoard = false;								
+					if(board.name == boardNameFilter)
+					{
+						isValidBoard = true;										
+					}
+				}
 				
-				var $boardCards = $("<div>") 
-				.attr({id: "boardcards_" + board.id})				
-				.addClass("float-cards clearfix")
-				.appendTo($boardModule);
+				if(isValidBoard && boardIdFilter)		
+				{		
+					isValidBoard = false;								
+					if(board.id == boardIdFilter)
+					{
+						isValidBoard = true;										
+					}
+				}
+				
+				if(isValidBoard)
+				{				
+					boardHash[board.id] = board;
+									
+					var $boardModule = $("<div>") 
+					.attr({id: "board_" + board.id})				
+					.addClass("window-module")
+					.appendTo($boards);	
+					$boardModule.hide();
+									
+					var $boardTitle = $("<div>")                
+					.addClass("window-module-title")
+					.addClass("board-module-title")
+					.appendTo($boardModule)
+					
+					var $boardLink = $("<a>")
+					.attr({href: board.url, target: "trello"})
+					.addClass("card")
+					.text(board.name)
+					.appendTo($boardTitle);	
+					
+					var $boardCards = $("<div>") 
+					.attr({id: "boardcards_" + board.id})				
+					.addClass("float-cards clearfix")
+					.appendTo($boardModule);
+									
+					Trello.get("/boards/" + board.id + "/lists", function(lists) {				
+						$.each(lists, function(ix, list) {												
+							var isValidList = true;
+							
+							if(isValidList && listNameFilter)		
+							{		
+								isValidList = false;								
+								if(list.name == listNameFilter)
+								{
+									isValidList = true;										
+								}
+							}											
+							
+							if(isValidList && listIdFilter)		
+							{		
+								isValidList = false;								
+								if(list.id == listIdFilter)
+								{
+									isValidList = true;										
+								}
+							}
+							
+							if(isValidList)
+							{														
+								listHash[list.id] = list;	
 								
-				Trello.get("/boards/" + board.id + "/lists", function(lists) {				
-					$.each(lists, function(ix, list) {						
-						listHash[list.id] = list;				
-					});  
-				});
+							}
+						});  					
+					});
+				}
 			});
 
+			
 			$loading.text("loading cards...");
 			console.log("loading cards...");
 			
-			var cardsUrl = "members/me/cards?members=true";			
-			Trello.get(cardsUrl, function(cards) {
-				$loading.text("check/render cards...");
-				console.log("check/render cards");
-				$.each(cards, function(ix, card) {	
-					var isValidCard = true;
-					
-					if(isValidCard && labelFilter)
-					{
-						isValidCard = false;
-						for(i=0;i<card.labels.length;i++)
-						{									
-							if(card.labels[i].name == labelFilter)
-							{										
-								isValidCard = true;												
-							}
-						}
-					}
-																	
-					if(isValidCard && usernameFilter)		
-					{		
-						isValidCard = false;								
-						for(i=0;i<card.members.length;i++)
-						{
-							if(card.members[i].username == usernameFilter)
-							{
-								isValidCard = true;										
-							}
-						}
-					}
-											
-					if(isValidCard && listNameFilter)		
-					{		
-						isValidCard = false;								
-						if(listHash[card.idList].name == listNameFilter)
-						{
-							isValidCard = true;										
-						}
-					}
-					
-					if(isValidCard && boardNameFilter)		
-					{		
-						isValidCard = false;								
-						if(boardHash[card.idBoard].name == boardNameFilter)
-						{
-							isValidCard = true;										
-						}
-					}
-					
-					if(isValidCard && listIdFilter)		
-					{		
-						isValidCard = false;								
-						if(card.idList == listIdFilter)
-						{
-							isValidCard = true;										
-						}
-					}
-					
-					if(isValidCard && boardIdFilter)		
-					{		
-						isValidCard = false;								
-						if(card.idBoard == boardIdFilter)
-						{
-							isValidCard = true;										
-						}
-					}
-					
-					if(isValidCard && minVoteFilter)		
-					{		
-						isValidCard = false;								
-						if(card.badges.votes >= minVoteFilter)
-						{
-							isValidCard = true;										
-						}
-					}					
-					if(isValidCard)
-					{				
-						$("#board_" + card.idBoard).show();
-
-						var $cardContainer = $("<div>")								
-						.addClass("list-card-container-customize")								
-						.appendTo("#boardcards_" + card.idBoard);		
-						
-						var $card = $("<div>")								
-						.addClass("list-card clearfix")								
-						.appendTo($cardContainer);	
-						
-						var $cardLabels = $("<div>")								
-						.addClass("card-labels clearfix")								
-						.appendTo($card);	
-						
-						var $cardLink = $("<a>")	
-						.attr({href: card.url, target: "trello", id: "card_" + card.id})								
-						.addClass("card-link")	
-						.text(card.name)								
-						.appendTo($cardLabels);
-															
-						var $cardList = $("<p>")								
-						.addClass("list-card-position quiet")	
-						.html("in <strong>" + listHash[card.idList].name + "</strong>")								
-						.appendTo($cardLabels);								
-		
-						var $cardMembers = $("<div>")								
-						.addClass("list-card-members")										
-						.appendTo($cardLabels);	
-						
-						for(i=0;i<card.members.length;i++)
-						{
-							var $cardMember;
-							if(card.members[i].avatarHash)
-							{
-								var avatarUrl = 'https://trello-avatars.s3.amazonaws.com/' + card.members[i].avatarHash + '/30.png';
-								$cardMember = $("<img>")
-								.attr({src: avatarUrl, alt: card.members[i].fullName})													
-								.addClass("useravatar")	
-								.css("margin-right", "5px")							
-								.appendTo($cardMembers);
-								
-								
-							}
-							else
-							{
-								$cardMember = $("<span>")
-								.text(card.members[i].initials)													
-								.addClass("userinitials")
-								.appendTo($cardMembers);
-							}
-							
-							
-							if(($.inArray(card.members[i].username, renderedMembers)) == -1)
-							{
-								$cardMember.clone().css("margin", "2px 10px 2px 2px").appendTo("#members-content");
-								
-								var $member = $("<div>")
-								.addClass("username")		
-								.text(card.members[i].fullName)		
-								.appendTo("#members-content");											
-								renderedMembers.push(card.members[i].username);
-							}
-						}
-						
-						if(card.badges.votes > 0)
-						{
-							var $cardVotes = $("<div>")								
-							.addClass("badge votes voted")									
-							.appendTo($cardLabels);	
-							
-							var $cardVotesIcon = $("<span>")								
-							.addClass("app-icon small-icon vote-icon")										
-							.appendTo($cardVotes);
-							
-							var $cardVotesTest = $("<span>")								
-							.text("+ " + card.idMembersVoted.length)								
-							.appendTo($cardVotes);
-						}
-					}
-				});  
-				console.log("done loading");
-				
-				console.log("start masonry");
-				  $('.float-cards').masonry({
-					itemSelector : '.list-card-container-customize',
-					gutterWidth : 15,										
-				  });
-				console.log("end masonry");
-				
-				$loading.hide();
-			});			
-        });
-
-		
-    });
-
+			
+			//load & render cards.. 
+			if(usernameFilter)
+			{
+				Trello.get("/members/" + usernameFilter + "/cards?members=true", function(cards){
+					renderCards(cards);
+				});
+			}			
+			else if(listIdFilter || listNameFilter)
+			{
+				console.log("loading cards - by lists..");
+				console.log(listHash);
+				for (var listId in listHash) {
+					console.log("loading cards - by list " + listId + "..")
+					var cardsUrl = "/lists/" + listId + "/cards?members=true";								
+					Trello.get(cardsUrl, function(cards){
+						renderCards(cards);
+					});							
+				}
+			}
+			else
+			{
+				console.log("loading cards - by boards..");
+				for (var boardId in boardHash) {
+					console.log("loading cards - by board " + boardId + "..")
+					var cardsUrl = "/boards/" + boardId + "/cards?members=true";								
+					Trello.get(cardsUrl, function(cards){
+						renderCards(cards);
+					});							
+				}
+			}			
+        });		
+    });	
 };
+
+function renderCards(cards) {
+	var $loading = $("#loading");
+	var boardIds = new Array();
+	$loading.text("check/render cards...");
+	console.log("check/render cards");
+	
+	
+	cards.sort(function(a, b)
+	{
+		// a and b will here be two objects from the array
+		// thus a[1] and b[1] will equal the names
+
+		// if they are equal, return 0 (no sorting)
+		var nameA=a.idBoard;
+		var nameB=b.idBoard;
+		
+		 if (nameA < nameB) //sort string ascending
+			return -1; 
+		 if (nameA > nameB)
+			return 1;
+ 		
+		 return 0; //default return value (no sorting)
+ 
+		/*
+		if (a.idBoard == b.idBoard) { return 0; }
+		
+		
+		var aSum = 0;
+		for(i=0;i<a.idBoard.length;i++)
+		{
+			aSum += a.idBoard.charCodeAt(i);
+		}
+		
+		var bSum = 0;
+		for(i=0;i<b.idBoard.length;i++)
+		{
+			bSum += b.idBoard.charCodeAt(i);
+		}
+		
+		
+		if (aSum > bSum)
+		{
+			// if a should come after b, return 1
+			return 1;
+		}
+		else
+		{
+			// if b should come after a, return -1
+			return -1;
+		}
+		*/
+});
+	
+	
+	
+	
+	
+	$.each(cards, function(ix, card) {	
+		var isValidCard = true;
+		
+		if(isValidCard && labelFilter)
+		{
+			isValidCard = false;
+			for(i=0;i<card.labels.length;i++)
+			{									
+				if(card.labels[i].name == labelFilter)
+				{										
+					isValidCard = true;												
+				}
+			}
+		}
+
+		if(isValidCard && minVoteFilter)		
+		{		
+			isValidCard = false;								
+			if(card.badges.votes >= minVoteFilter)
+			{
+				isValidCard = true;										
+			}
+		}					
+		if(isValidCard)
+		{						
+			boardIds.push(card.idBoard);				
+
+			$("#board_" + card.idBoard).show();
+
+			var $cardContainer = $("<div>")								
+			.addClass("list-card-container-customize")								
+			.appendTo("#boardcards_" + card.idBoard);		
+			BoardSelector = "#boardcards_" + card.idBoard;
+			var $card = $("<div>")								
+			.addClass("list-card clearfix")								
+			.appendTo($cardContainer);	
+			
+			var $cardLabels = $("<div>")								
+			.addClass("card-labels clearfix")								
+			.appendTo($card);	
+			
+			var $cardLink = $("<a>")	
+			.attr({href: card.url, target: "trello", id: "card_" + card.id})								
+			.addClass("card-link")	
+			.text(card.name)								
+			.appendTo($cardLabels);
+												
+			var $cardList = $("<p>")								
+			.addClass("list-card-position quiet")	
+			.html("in <strong>" + listHash[card.idList].name + "</strong>")								
+			.appendTo($cardLabels);								
+
+			var $cardMembers = $("<div>")								
+			.addClass("list-card-members")										
+			.appendTo($cardLabels);	
+			
+			for(i=0;i<card.members.length;i++)
+			{
+				var $cardMember;
+				if(card.members[i].avatarHash)
+				{
+					var avatarUrl = 'https://trello-avatars.s3.amazonaws.com/' + card.members[i].avatarHash + '/30.png';
+					$cardMember = $("<img>")
+					.attr({src: avatarUrl, alt: card.members[i].fullName})													
+					.addClass("useravatar")	
+					.css("margin-right", "5px")							
+					.appendTo($cardMembers);
+				}
+				else
+				{
+					$cardMember = $("<span>")
+					.text(card.members[i].initials)													
+					.addClass("userinitials")
+					.css("margin-right", "5px")	
+					.appendTo($cardMembers);
+				}
+				
+				
+				if(($.inArray(card.members[i].username, renderedMembers)) == -1)
+				{
+					$cardMember.clone().css("margin", "2px 10px 2px 2px").appendTo("#members-content");
+					
+					var $member = $("<div>")
+					.addClass("username")		
+					.text(card.members[i].fullName)		
+					.appendTo("#members-content");											
+					renderedMembers.push(card.members[i].username);
+				}
+			}
+			
+			if(card.badges.votes > 0)
+			{
+				var $cardVotes = $("<div>")								
+				.addClass("badge votes voted")									
+				.appendTo($cardLabels);	
+				
+				var $cardVotesIcon = $("<span>")								
+				.addClass("app-icon small-icon vote-icon")										
+				.appendTo($cardVotes);
+				
+				var $cardVotesTest = $("<span>")								
+				.text("+ " + card.idMembersVoted.length)								
+				.appendTo($cardVotes);
+			}
+		}
+	});  
+	console.log("done loading");
+	
+	for(i=0;i<boardIds.length;i++)
+	{
+		console.log("start masonry for #boardcards_" + boardIds[i]);
+		$("#boardcards_" + boardIds[i]).masonry({
+			itemSelector : '.list-card-container-customize',
+			gutterWidth : 15										
+		});	
+		console.log("end masonry");	
+	}
+	
+	$loading.hide();
+}
 
 function updateLoggedIn() {
     var isLoggedIn = Trello.authorized();
