@@ -1,6 +1,6 @@
 Warning
 =========
-This may is an old Version. We moved to Bitbucket.org
+This may is an old version. We moved to Bitbucket.org
 https://bitbucket.org/gluix/trellowall
 
 
